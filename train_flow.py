@@ -38,7 +38,6 @@ def calc_relative_motion_loss(pred, box_pre, box_current):
     ht_pred = torch.exp(pred[:, 3]) * box_pre[:, 3]
 
     abs_pos_pred = torch.stack((ut_pred, vt_pred, wt_pred, ht_pred)).permute(1, 0)
-    print(box_current.shape, abs_pos_pred.shape)
     return F.smooth_l1_loss(abs_pos_pred, box_current, beta=4.0)
 
 
@@ -56,7 +55,7 @@ class TrackerSiamFC():
 
         # setup model
         self.net = Net()
-        init_weights(self.net)
+        # init_weights(self.net)  
 
         # load checkpoint if provided
         if net_path is not None:
@@ -175,7 +174,7 @@ class TrackerSiamFC():
                 print('Epoch: {} [{}/{}] Loss: {:.5f}'.format(
                     epoch + 1, it + 1, len(dataloader), loss))
                 sys.stdout.flush()
-                exit()
+                input()
 
             # save checkpoint
             if not os.path.exists(save_dir):

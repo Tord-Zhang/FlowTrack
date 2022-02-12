@@ -59,7 +59,6 @@ class Net(nn.Module):
 
 
     def forward(self, x_pre, x, xpre_box):
-        print(x_pre.size())
         x_pre = self.normalize(x_pre)
         x = self.normalize(x)
 
