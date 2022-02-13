@@ -20,7 +20,22 @@ import numpy as np
 import cv2
 import sys
 import os
+from core.utils import flow_viz
 
+
+def visflow(img, flo):
+    img = img[0].permute(1,2,0).cpu().numpy()
+    flo = flo[0].permute(1,2,0).cpu().numpy()
+    
+    # map flow to rgb image
+    flo = flow_viz.flow_to_image(flo)
+    img_flo = np.concatenate([img, flo], axis=0)
+
+    # import matplotlib.pyplot as plt
+    # plt.imshow(img_flo / 255.0)
+    # plt.show()
+
+    cv2.imwrite('image.png', img_flo[:, :, [2,1,0]]/255.0)
 
 class Net(nn.Module):
 
@@ -33,9 +48,6 @@ class Net(nn.Module):
         parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
         args = parser.parse_args()
 
-        # self.backbone = torch.nn.DataParallel(RAFT(args))
-        # self.backbone.load_state_dict(torch.load(args.model))
-        # self.backbone = self.backbone.module
         self.backbone = RAFT(args)
         ckpt = torch.load(args.model, map_location=torch.device('cpu'))
         new_weight = {}
@@ -59,11 +71,29 @@ class Net(nn.Module):
 
 
     def forward(self, x_pre, x, xpre_box):
+        import torchvision
+        # save_image1 = torchvision.utils.make_grid(
+        #     x_pre, nrow=1, normalize=True)
+        # save_image2 = torchvision.utils.make_grid(
+        #     x_pre, nrow=1, normalize=True)
+        # torchvision.utils.save_image(
+        #     torch.cat((save_image1,  save_image2), dim=2),
+        #     'test.jpg'
+        # )
+
         x_pre = self.normalize(x_pre)
         x = self.normalize(x)
 
-        flow_low, flow_up = self.backbone(x_pre, x, iters=20, test_mode=True)
+        flow_low, flow_up = self.backbone(x_pre, x, iters=12, test_mode=True)
 
+        # save_flow1 = torchvision.utils.make_grid(
+        #     flow_up[:,0,:, :].unsqueeze(1), nrow=1, normalize=True)
+        # save_flow2 = torchvision.utils.make_grid(
+        #     flow_up[:, 1, :, :].unsqueeze(1), nrow=1, normalize=True)
+        # torchvision.utils.save_image(
+        #     torch.cat((save_flow1,  save_flow2), dim=2),
+        #     'flow2c.jpg')
+        # print(flow_up)
         roi = torch.cat((torch.zeros((xpre_box.shape[0], 1)).float().to(
                 self.device, non_blocking=torch.cuda.is_available()), xpre_box), 1)
 
@@ -72,6 +102,7 @@ class Net(nn.Module):
         flow = flow.to(torch.float32)
 
         x_box = self.fc(flow)
+
         return x_box
 
 
