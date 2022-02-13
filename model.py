@@ -27,7 +27,7 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         parser = argparse.ArgumentParser()
-        parser.add_argument('--model',default="/home/zhimahu/jjy/FlowTrain/raft_pretained/raft-things.pth")
+        parser.add_argument('--model',default="raft-sintel.pth")
         parser.add_argument('--small', action='store_true', help='use small model')
         parser.add_argument('--mixed_precision', action='store_true', help='use mixed precision')
         parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
@@ -37,7 +37,7 @@ class Net(nn.Module):
         # self.backbone.load_state_dict(torch.load(args.model))
         # self.backbone = self.backbone.module
         self.backbone = RAFT(args)
-        ckpt = torch.load(args.model)
+        ckpt = torch.load(args.model, map_location=torch.device('cpu'))
         new_weight = {}
         for key, val in ckpt.items():
             new_weight[key[7:]] = val

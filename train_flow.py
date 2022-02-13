@@ -174,7 +174,6 @@ class TrackerSiamFC():
                 print('Epoch: {} [{}/{}] Loss: {:.5f}'.format(
                     epoch + 1, it + 1, len(dataloader), loss))
                 sys.stdout.flush()
-                input()
 
             # save checkpoint
             if not os.path.exists(save_dir):

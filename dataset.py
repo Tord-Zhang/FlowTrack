@@ -175,6 +175,7 @@ class FlowTrackDataset(Dataset):
 
         # take two frames from the seq
         interval = random.randint(1, 20)
+        interval = min(interval, num_imgs - 1)
         frame1_idx = random.randint(0, num_imgs - interval - 1)
         frame1_path = img_files[frame1_idx]
         box1 = np.array(anno[frame1_idx]).astype(np.int)
@@ -201,16 +202,10 @@ class FlowTrackDataset(Dataset):
 if __name__ == "__main__":
     from dataset_utils import Compose, RandomCrop, Resize
 
-    # corr = [615,0,664,306]
-    # img = cv2.imread("data/ILSVRC2015_VID/ILSVRC2015/Data/VID/train/ILSVRC2015_VID_train_0002/ILSVRC2015_train_00017006/000000.JPEG")
-    # cv2.rectangle(img, (corr[0], corr[1]), (corr[0]+corr[2], corr[1]+corr[3]), (0,0,255), 3)
-    # cv2.imwrite("test.png", img)
-    # exit()
-
     transforms = Compose(
         [
         RandomCrop(),
-        # Resize(length=384, multiple=1)
+        Resize(length=384, multiple=1)
         ]
     )
 
@@ -218,7 +213,8 @@ if __name__ == "__main__":
     img_files, anno = data[0]
     
     dataset = FlowTrackDataset("data/ILSVRC2015_VID/ILSVRC2015", transforms)
-
+    print(len(dataset))
+    exit()
     img1, img2, box1, box2 = dataset[0]
     
     print(img1.shape)
